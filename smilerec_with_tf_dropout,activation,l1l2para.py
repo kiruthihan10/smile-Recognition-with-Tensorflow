@@ -13,18 +13,22 @@ sess = tf.Session()
 
 import PIL
 
+#Setting the numbers of neurons in each layers.
 n_inputs=64*64*3
 n_hidden1=500
 n_hidden2=25
 n_outputs=2
 
+#Defining varible placeholders in Tensorflow
 X=tf.placeholder(tf.float32,shape=(None,n_inputs),name="X")
 y=tf.placeholder(tf.int64,shape=(None),name="y")
 training = tf.placeholder_with_default(False,shape=(),name='training')
 
+#Using Leaky relu activation function for gradient clipping
 def leaky_relu(z,name=None):
   return tf.maximum(0.01*z,z,name=name)
 
+#Using dropout to prevent Overfitting
 dropout_rate = 0.5
 X_drop = tf.layers.dropout(X,dropout_rate,training= training)
 
@@ -50,8 +54,10 @@ with tf.name_scope("dnn"):
   logits = tf.layers.batch_normalization(logits_before_bn,training=training,momentum=0.9)
   y_proba = tf.nn.softmax(logits)
 
+
 learning_rate =0.01
 
+#Defning the loss function
 with tf.name_scope("loss"):                                     # not shown in the book
     xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(  # not shown
         labels=y, logits=logits)                                # not shown
@@ -59,6 +65,7 @@ with tf.name_scope("loss"):                                     # not shown in t
     reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     loss = tf.add_n([base_loss] + reg_losses, name="loss")
 
+#Defining the training function
 with tf.name_scope("train"):
   threshold=1.0
   optimizer = tf.train.GradientDescentOptimizer(learning_rate)
@@ -67,6 +74,7 @@ with tf.name_scope("train"):
                 for grad,var in grads_and_vars]
   training_op=optimizer.apply_gradients(capped_gvs)
 
+#Training evaluation function
 with tf.name_scope("eval"):
   correct = tf.nn.in_top_k(logits,y,1)
   accuracy = tf.reduce_mean(tf.cast(correct,tf.float32))
@@ -74,16 +82,16 @@ with tf.name_scope("eval"):
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
-n_epochs = 40
-batch_size = 50
-
+#Using PIL library for read image files
 from PIL import Image
 
+#Load images from Google Drive using google lib
 from google.colab import drive
 drive.mount('/content/gdrive')
 
 import numpy
 
+#Creating functions to read files
 def img_loader():
     common_path = "/content/gdrive/My Drive/Smile_Recognition/faces/"
     txt_path = "/content/gdrive/My Drive/Smile_Recognition/"
@@ -108,6 +116,7 @@ def img_loader():
     #print(len(grand_row))
     return images
 
+#Create function to classify the labels
 def smile_check():
     txt_path = "/content/gdrive/My Drive/Smile_Recognition/"
     smile = open(txt_path+"SMILE_list_ppm.txt",'r')
@@ -148,20 +157,22 @@ def main():
     temp_y =[]
     chaos = np.random.permutation(len(images))
     print("Images Loaded!")
+    #Shuffle the datas
     for i in chaos:
       temp_X.append(images[i])
       temp_y.append(smiles[i])
     images=temp_X
     smiles=temp_y
+    #Slicing datas into test and train cases
     train_X = images[:900]
     test_X = images[900:]
     train_Y = smiles[:900]
     test_Y = smiles[900:]
     print("Images Shuffled")
-    print(train_X[0])
-    print(train_Y[:101])
+    #Setting eppoches and batch sizes
     n_epochs = 10
     batch_size = 800
+    #Run the tensorflow session to train the DNN
     with tf.Session() as sess:
       init.run()
       for epoch in range(n_epochs):
@@ -178,10 +189,3 @@ def main():
       save_path = saver.save(sess,"./my_moel_final.ckpt")
 
 main()
-
-def xtest():
-  images = img_loader()
-  smiles = smile_check()
-  train_X = images[:900]
-  print (train_X)
-  print(train_X[0])
