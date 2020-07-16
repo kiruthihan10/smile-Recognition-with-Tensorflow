@@ -7,7 +7,7 @@ async function app() {
   console.log('Loading mobilenet..');
 
   // Load the model.
-  const model = await tf.loadLayersModel('https://api.jsonbin.io/b/5f10169c9180616628429b21');
+  const model = await tf.loadLayersModel(''); //Json file link here
   console.log('Successfully loaded model');
   
   // Create an object from Tensorflow.js data API which could capture image 
