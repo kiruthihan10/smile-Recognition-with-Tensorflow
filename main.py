@@ -25,13 +25,12 @@ val = data_gen.flow_from_directory(data_path,target_size=(image_size, image_size
 
 IMG_SHAPE = (image_size, image_size,3)
 
-base_model = tf.keras.applications.NASNetMobile(include_top=False,input_shape=IMG_SHAPE,weights="imagenet")
+base_model = tf.keras.applications.NASNetMobile(include_top=False,input_shape=IMG_SHAPE,weights="imagenet",pooling="avg")
 
 base_model.trainable = False
 
 model = tf.keras.Sequential([
     base_model,
-    keras.layers.Flatten(),
     keras.layers.Dense(100,activation="elu"),
     keras.layers.Dense(1,activation='sigmoid')
 ])
